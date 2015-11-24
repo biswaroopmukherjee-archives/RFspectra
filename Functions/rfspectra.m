@@ -1,4 +1,4 @@
-function [spec,clock] = rfspectra(images,rf,varargin)
+function [spec,clocks] = rfspectra(images,rf,varargin)
 %% RFSPECTRA takes an image series and plots
 % Usage:  data = rfspectra(images,rf,crop)
 %         images: a cell array with full paths to images
@@ -15,8 +15,8 @@ switch nargin
         xcrop = 101:383;
         ycrop = 204:389;
     case 2 % default cropping from 2015-11-18
-        xcrop = 111:403;
-        ycrop = 294:319;
+        xcrop = 101:383;
+        ycrop = 204:389;
     case 3 % provide crop coordinates
         crop = varargin{1};
         xcrop = crop(1):crop(2);
@@ -35,7 +35,7 @@ spec = rfprocess(data,xcrop,ycrop);
 % spec = rfbin(spec,30);
 
 %% Find the clock shifts
-clock = clockfind(spec,rf);
+clocks = clockfind(spec,rf);
 
 %% Plot spectra (optional)
 figure(1)
@@ -49,7 +49,7 @@ ylabel('Axial position');
 
 %% Plot the clock shifts (optional)
 figure(2);
-plot(clock,'Marker','.','MarkerSize',15,'LineStyle','none')
+plot(clocks,'Marker','.','MarkerSize',15,'LineStyle','none')
 ylim([81.72,81.746])
 ax2 = gca;
 set(ax2,'FontSize',14);
@@ -59,12 +59,12 @@ ylabel('Mean RF transition frequency');
 
 end
 
-function clock = clockfind(spec,rf)
+function clocks = clockfind(spec,rf)
 %% CLOCKPLOT plots the clock shift from the spectrum data provided in rf
     s = size(spec);
     specout = specnorm(spec);
     rfrep = repmat(cell2mat(rf)',[s(1),1]);
-    clock = sum(specout.*rfrep,2);
+    clocks = sum(specout.*rfrep,2);
 end
 
 function specout = specnorm(spec)
