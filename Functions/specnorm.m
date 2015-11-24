@@ -1,6 +1,6 @@
 function specout = specnorm(spec)
-s=size(spec);
-for i=1:s(2)
-    specout(:,i) = spec(:,i)/sum(spec(:,i));
-end
+%% SPECNORM normalizes the spectra
+    s=size(spec);
+    spec_sum = repmat(sum(spec,2),[1,s(2)]);
+    specout = spec./spec_sum;
 end

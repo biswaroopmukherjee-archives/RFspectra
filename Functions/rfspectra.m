@@ -1,4 +1,4 @@
-function specbinned = rfspectra(images,rf,varargin)
+function [spec,clock] = rfspectra(images,rf,varargin)
 %% RFSPECTRA takes an image series and plots
 % Usage:  data = rfspectra(images,rf,crop)
 %         images: a cell array with full paths to images
@@ -31,13 +31,47 @@ data = rfload(images,rf);
 %% Slice images
 spec = rfprocess(data,xcrop,ycrop);
 
-%% Bin spectra
-specbinned = rfbin(spec,20);
+%% Bin spectra (optional)
+% spec = rfbin(spec,30);
 
-%% Plot spectra
-rfplot(specbinned,rf);
+%% Find the clock shifts
+clock = clockfind(spec,rf);
+
+%% Plot spectra (optional)
+figure(1)
+imagesc(spec);
+ax1 = gca;
+set(ax1,'XTick',1:2:length(rf))
+set(ax1,'XTickLabel',num2str(cell2mat(rf(2:2:end)),'%.2f'));
+set(ax1,'FontSize',14);
+xlabel('RF frequency (MHz)');
+ylabel('Axial position');
+
+%% Plot the clock shifts (optional)
+figure(2);
+plot(clock,'Marker','.','MarkerSize',15,'LineStyle','none')
+ylim([81.72,81.746])
+ax2 = gca;
+set(ax2,'FontSize',14);
+xlabel('Axial position');
+ylabel('Mean RF transition frequency');
 
 
+end
+
+function clock = clockfind(spec,rf)
+%% CLOCKPLOT plots the clock shift from the spectrum data provided in rf
+    s = size(spec);
+    specout = specnorm(spec);
+    rfrep = repmat(cell2mat(rf)',[s(1),1]);
+    clock = sum(specout.*rfrep,2);
+end
+
+function specout = specnorm(spec)
+%% SPECNORM normalizes the spectra
+    s=size(spec);
+    spec_sum = repmat(sum(spec,2),[1,s(2)]);
+    specout = spec./spec_sum;
 end
 
 function spec = rfbin(img,slices)
@@ -48,15 +82,10 @@ function spec = rfbin(img,slices)
     for i=1:slices
         low = (1+(i-1)*w);
         high = i*w;
-        spec(i,:) = sum(img(low:high,:))';
+        spec(i,:) = mean(img(low:high,:))';
     end
 end
     
-function rfplot(spec,rf)
-%% RFPLOT plots the spectrum as an image
-    imagesc(spec);
-    set(gca,'XTickLabel',num2str(cell2mat(rf(2:2:end))));
-end
 
 function spec = rfprocess(data,xcrop,ycrop)
 %% RFPROCESS rotates and slices the raw images
@@ -89,7 +118,7 @@ end
 function [images,rf] = samplesload
 %% Load the sample images
     images = {'11-19-2015_01_47_24_top.fits','11-19-2015_01_48_17_top.fits','11-19-2015_01_49_10_top.fits','11-19-2015_01_50_03_top.fits','11-19-2015_01_50_56_top.fits','11-19-2015_01_51_49_top.fits','11-19-2015_01_52_42_top.fits','11-19-2015_01_53_35_top.fits','11-19-2015_01_54_28_top.fits','11-19-2015_01_55_21_top.fits','11-19-2015_01_56_15_top.fits','11-19-2015_01_57_08_top.fits','11-19-2015_01_58_01_top.fits','11-19-2015_01_58_54_top.fits','11-19-2015_01_59_47_top.fits','11-19-2015_02_00_40_top.fits','11-19-2015_02_01_33_top.fits','11-19-2015_02_03_02_top.fits','11-19-2015_02_03_55_top.fits','11-19-2015_02_04_48_top.fits'};
-    directory = '/Users/biswaroopmukherjee/Documents/Physics/Research/Zwierlein/box data/RFspectra/Samples/';
+    directory = '../Samples/';
     images = cellfun(@(x) [directory,x],images,'UniformOutput',false); % append full path 
     rf = num2cell([81.7100000000000;81.7180000000000;81.7220000000000;81.7260000000000;81.7300000000000;81.7320000000000;81.7340000000000;81.7360000000000;81.7380000000000;81.7420000000000;81.7460000000000;81.7500000000000;81.7550000000000;81.7600000000000;81.7700000000000;81.7800000000000;81.7900000000000;81.8000000000000;81.8100000000000;81.8200000000000]);
 end
