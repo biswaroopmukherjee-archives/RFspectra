@@ -12,8 +12,8 @@ function [spec,clock] = rfspectra(images,rf,varargin)
 switch nargin
     case 0 % load samples
         [images,rf] = samplesload;
-        xcrop = 111:403;
-        ycrop = 294:319;
+        xcrop = 101:383;
+        ycrop = 204:389;
     case 2 % default cropping from 2015-11-18
         xcrop = 111:403;
         ycrop = 294:319;
