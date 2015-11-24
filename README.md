@@ -2,7 +2,7 @@
 
 MATLAB code to plot local RF spectra across an atomic cloud in a hybrid trap. Use Functions/rfspectra.m to evaluate the spectra:
 
-'''MATLAB
+'''
 [spec,clock] = rfspectra(images,rf,crop);
 '''
 
