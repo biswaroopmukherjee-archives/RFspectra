@@ -32,7 +32,7 @@ data = rfload(images,rf);
 spec = rfprocess(data,xcrop,ycrop);
 
 %% Bin spectra (optional)
- spec = rfbin(spec,20);
+% spec = rfbin(spec,20);
 
 %% Find the clock shifts
 clocks = clockfind(spec,rf);
@@ -56,6 +56,16 @@ set(ax2,'FontSize',14);
 xlabel('Axial position');
 ylabel('Mean RF transition frequency');
 
+%% Plot the clock shift as a function of "kf" from spectral summing
+specsum = sum(spec,2);
+figure(3);
+plot(specsum, clocks,'Marker','.','MarkerSize',15,'LineStyle','none')
+ylim([81.72,81.746])
+xlim([0,max(specsum)])
+ax3 = gca;
+set(ax3,'FontSize',14);
+xlabel('k_F (a.u.)');
+ylabel('Mean RF transition frequency');
 
 end
 
