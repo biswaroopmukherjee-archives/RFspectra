@@ -32,7 +32,7 @@ data = rfload(images,rf);
 spec = rfprocess(data,xcrop,ycrop);
 
 %% Bin spectra (optional)
-% spec = rfbin(spec,30);
+ spec = rfbin(spec,20);
 
 %% Find the clock shifts
 clocks = clockfind(spec,rf);
