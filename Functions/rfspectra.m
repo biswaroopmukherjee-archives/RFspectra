@@ -5,7 +5,8 @@ function [spec,clocks] = rfspectra(images,rf,varargin)
 %         rf: a cell array with rf frequencies
 %         crop: [x1, x2, y1, y2] where (x1,y1) and (x2,y2) are crop coordinates
 %
-%         specbinned: the spectrum output
+%         spec: the spectrum output
+%         clocks: array of mean RF transition frequencies
 
 
 %% Arguments
