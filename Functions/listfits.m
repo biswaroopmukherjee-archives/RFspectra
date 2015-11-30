@@ -7,6 +7,6 @@ names= {x.name};
 [fitslocs,~]=cellfun(@size,strfind(names,'fits'));
 fitsfiles=x(logical(fitslocs));
 images = {fitsfiles.name};
-images = cellfun(@(x) [directory,x],images,'UniformOutput',false); % append full path 
+images = cellfun(@(x) [directory,'/',x],images,'UniformOutput',false); % append full path 
 
 end
