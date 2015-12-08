@@ -1,11 +1,12 @@
 function [spec,clocks] = rfspectra(images,rf,varargin)
 %% RFSPECTRA takes an image series and plots
-% Usage:  data = rfspectra(images,rf,crop)
+% Usage:  rfspectra(images,rf,crop)
 %         images: a cell array with full paths to images
 %         rf: a cell array with rf frequencies
 %         crop: [x1, x2, y1, y2] where (x1,y1) and (x2,y2) are crop coordinates
 %
-%         specbinned: the spectrum output
+%         spec: the spectrum output
+%         clocks: array of mean RF transition frequencies
 
 
 %% Arguments
@@ -37,7 +38,7 @@ data = rfload(images,rf);
 spec = rfprocess(data,xcrop,ycrop);
 
 %% Bin spectra (optional)
-% spec = rfbin(spec,20);
+%   spec = rfbin(spec,20);
 
 %% Find the clock shifts
 clocks = clockfind(spec,rf);
@@ -47,15 +48,15 @@ figure(1)
 imagesc(spec);
 ax1 = gca;
 set(ax1,'XTick',1:2:length(rf))
-set(ax1,'XTickLabel',num2str(cell2mat(rf(1:2:end)'),'%.2f'));
+set(ax1,'XTickLabel',num2str(81735-1000*cell2mat(rf(1:2:end)')));
 set(ax1,'FontSize',14);
-xlabel('RF frequency (MHz)');
+xlabel('RF frequency (kHz from 81.735 MHz)');
 ylabel('Axial position');
 
 %% Plot the clock shifts (optional)
 figure(2);
 plot(clocks,'Marker','.','MarkerSize',15,'LineStyle','none')
-ylim([81.73,81.741])
+ylim([81.735,81.745])
 ax2 = gca;
 set(ax2,'FontSize',14);
 xlabel('Axial position');
@@ -65,7 +66,7 @@ ylabel('Mean RF transition frequency');
 specsum = sum(spec,2);
 figure(3);
 plot(specsum, clocks,'Marker','.','MarkerSize',15,'LineStyle','none')
-ylim([81.73,81.741])
+ylim([81.735,81.745])
 xlim([0,max(specsum)])
 ax3 = gca;
 set(ax3,'FontSize',14);
@@ -121,12 +122,13 @@ function data = rfload(images,rf)
     data(1:length(images)) = struct('name','','img',[],'rf',0);
     % Load the images from the filenames
     fprintf('\n');
+    s2img = loadfitsimage('/Users/biswaroopmukherjee/Documents/Physics/Research/Zwierlein/box data/11-25-2015_19_52_49_top.fits');
     for i =1:length(images)
         fprintf('.');
         data(i).name = images{i};
-        disp(images{i});
-        disp(rf{i});
-        data(i).img=loadfitsimage(data(i).name);
+%         disp(images{i});
+%         disp(rf{i});
+        data(i).img=loadfitsimage(data(i).name)-s2img;
         data(i).rf = rf{i};
     end
     fprintf('\n');

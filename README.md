@@ -24,3 +24,5 @@ The mean transition frequency varies as a function of position in the cloud. The
 
 ![Clock](https://raw.githubusercontent.com/biswaroopmukherjee/RFspectra/master/Figures/clock_out.png)
 
+## To do:
+Bin RF values, get real kf, add arguments for state 2 ref, kf binning, ignores
