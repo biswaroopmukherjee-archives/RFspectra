@@ -1,19 +1,19 @@
-function [spec,clocks] = rfspectra(images,rf,varargin)
+function [imgout,data] = sumimg(images,varargin)
 %% RFSPECTRA takes an image series and plots
-% Usage:  data = rfspectra(images,rf,crop)
+% Usage:  rfspectra(images,rf,crop)
 %         images: a cell array with full paths to images
 %         rf: a cell array with rf frequencies
 %         crop: [x1, x2, y1, y2] where (x1,y1) and (x2,y2) are crop coordinates
 %
-%         specbinned: the spectrum output
+%         spec: the spectrum output
+%         clocks: array of mean RF transition frequencies
 
 
 %% Arguments
 switch nargin
-    case 0 % load samples
-        [images,rf] = samplesload;
+    case 1 % load samples
         xcrop = 101:383;
-        ycrop = 204:389;
+        ycrop = 164:369;
     case 2 % default cropping from 2015-11-18
         xcrop = 101:383;
         ycrop = 204:389;
@@ -28,46 +28,23 @@ end
 
 
 %% Load images
-data = rfload(images,rf);
+data = rfload(images);
 
 %% Slice images
-spec = rfprocess(data,xcrop,ycrop);
+imgout = rfprocess(data,xcrop,ycrop);
 
-%% Bin spectra (optional)
-% spec = rfbin(spec,20);
 
-%% Find the clock shifts
-clocks = clockfind(spec,rf);
 
 %% Plot spectra (optional)
 figure(1)
-imagesc(spec);
-ax1 = gca;
-set(ax1,'XTick',1:2:length(rf))
-set(ax1,'XTickLabel',num2str(cell2mat(rf(1:2:end)'),'%.2f'));
-set(ax1,'FontSize',14);
-xlabel('RF frequency (MHz)');
-ylabel('Axial position');
-
-%% Plot the clock shifts (optional)
-figure(2);
-plot(clocks,'Marker','.','MarkerSize',15,'LineStyle','none')
-ylim([81.73,81.741])
-ax2 = gca;
-set(ax2,'FontSize',14);
-xlabel('Axial position');
-ylabel('Mean RF transition frequency');
-
-%% Plot the clock shift as a function of "kf" from spectral summing
-specsum = sum(spec,2);
-figure(3);
-plot(specsum, clocks,'Marker','.','MarkerSize',15,'LineStyle','none')
-ylim([81.73,81.741])
-xlim([0,max(specsum)])
-ax3 = gca;
-set(ax3,'FontSize',14);
-xlabel('k_F (a.u.)');
-ylabel('Mean RF transition frequency');
+imagesc(imgout);
+axis image
+% ax1 = gca;
+% set(ax1,'XTick',1:2:length(rf))
+% set(ax1,'XTickLabel',num2str(81735-1000*cell2mat(rf(1:2:end)')));
+% set(ax1,'FontSize',14);
+% xlabel('RF frequency (kHz from 81.735 MHz)');
+% ylabel('Axial position');
 
 end
 
@@ -76,8 +53,6 @@ function clocks = clockfind(spec,rf)
     s = size(spec);
     specout = specnorm(spec);
     rfrep = repmat(cell2mat(rf),[s(1),1]);
-    disp(size(rfrep))
-    disp(size(specout))
     clocks = sum(specout.*rfrep,2);
 end
 
@@ -101,30 +76,30 @@ function spec = rfbin(img,slices)
 end
     
 
-function spec = rfprocess(data,xcrop,ycrop)
+function imout = rfprocess(data,xcrop,ycrop)
 %% RFPROCESS rotates and slices the raw images
-    % Initialize spectra
-    spec = zeros(length(xcrop),length(data));
-    
     % Populate spectra
+    imout = zeros(length(xcrop),length(ycrop));
     for i=1:length(data)
         image = imrotate(data(i).img,4); % Rotate the image by 4 degrees
-        slice = mean(image(xcrop,ycrop),2);
-        spec(:,i) = slice;
+        slice = image(xcrop,ycrop);
+        imout = imout + slice;
     end
+    
 end
 
-function data = rfload(images,rf)
+function data = rfload(images)
 %% RFLOAD loads the raw images as OD arrays
     % Initialize data struct
-    data(1:length(images)) = struct('name','','img',[],'rf',0);
     % Load the images from the filenames
     fprintf('\n');
+%     s2img = loadfitsimage('/Users/biswaroopmukherjee/Documents/Physics/Research/Zwierlein/box data/11-25-2015_19_52_49_top.fits');
     for i =1:length(images)
         fprintf('.');
         data(i).name = images{i};
+%         disp(images{i});
+%         disp(rf{i});
         data(i).img=loadfitsimage(data(i).name);
-        data(i).rf = rf{i};
     end
     fprintf('\n');
 end
