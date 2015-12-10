@@ -1,4 +1,4 @@
-function [spec,clocks] = rfspectra(images,rf,varargin)
+function [data,spec,clocks] = rfspectra(images,rf,varargin)
 %% RFSPECTRA takes an image series and plots
 % Usage:  rfspectra(images,rf,crop)
 %         images: a cell array with full paths to images
@@ -38,14 +38,14 @@ data = rfload(images,rf);
 spec = rfprocess(data,xcrop,ycrop);
 
 %% Bin spectra (optional)
-%   spec = rfbin(spec,20);
+ %  spec = rfbin(spec,20);
 
 %% Find the clock shifts
 clocks = clockfind(spec,rf);
 
 %% Plot spectra (optional)
 figure(1)
-imagesc(spec);
+imagesc(specnorm(spec));
 ax1 = gca;
 set(ax1,'XTick',1:2:length(rf))
 set(ax1,'XTickLabel',num2str(81735-1000*cell2mat(rf(1:2:end)')));
@@ -122,13 +122,13 @@ function data = rfload(images,rf)
     data(1:length(images)) = struct('name','','img',[],'rf',0);
     % Load the images from the filenames
     fprintf('\n');
-    s2img = loadfitsimage('/Users/biswaroopmukherjee/Documents/Physics/Research/Zwierlein/box data/11-25-2015_19_52_49_top.fits');
+%     s2img = loadfitsimage('/Users/biswaroopmukherjee/Documents/Physics/Research/Zwierlein/box data/11-25-2015_19_52_49_top.fits');
     for i =1:length(images)
         fprintf('.');
         data(i).name = images{i};
 %         disp(images{i});
 %         disp(rf{i});
-        data(i).img=loadfitsimage(data(i).name)-s2img;
+        data(i).img=loadfitsimage(data(i).name);
         data(i).rf = rf{i};
     end
     fprintf('\n');
