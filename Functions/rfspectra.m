@@ -26,6 +26,9 @@ switch nargin
         msgbox('Check your parameters');
 end
 
+rf = reshape(rf,[1 length(rf)]);
+images = reshape(images,[1 length(images)]);
+
 % Sort the spectra by RF values
 [rfsort,ix] = sort(cell2mat(rf));
 images = images(ix);
@@ -48,10 +51,11 @@ figure(1)
 imagesc(specnorm(spec));
 ax1 = gca;
 set(ax1,'XTick',1:2:length(rf))
-set(ax1,'XTickLabel',num2str(81735-1000*cell2mat(rf(1:2:end)')));
+set(ax1,'XTickLabel',num2str(1000*cell2mat(rf(1:2:end)')-81735));
 set(ax1,'FontSize',14);
 xlabel('RF frequency (kHz from 81.735 MHz)');
 ylabel('Axial position');
+caxis([0 .5])
 
 %% Plot the clock shifts (optional)
 figure(2);
