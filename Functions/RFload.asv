@@ -1,28 +1,33 @@
-function data = RFload
+function data = RFload(varargin)
 
-    experiment = 'RF_1';
+%% Define inputs
+    switch nargin
+        case 0
+            experiment = 'RF_1';
+        case 1
+            experiment = varargin{1};
+            if ~ischar(experiment)
+                msgbox('Please enter a string for the experiment name');
+            end
+    end
+               
+ %% Define paths           
+    addpath('Snippet_Readout');
+
     raw_data_path = 'C:\Users\BEC1\Dropbox (MIT)\BEC1\Image Data and Cicero Files\Data - Raw Images';
     processed_data_path = 'C:\Users\BEC1\Dropbox (MIT)\BEC1\Processed Data';
+    
     [source,tempfolder,destination] = foldermanagement(raw_data_path,processed_data_path,experiment);
 
-    find = questdlg('Would you like a dessert?', ...
-        'Dessert Menu', ...
-        'Ice cream','Cake','No thank you','No thank you');
-    % Handle response
-    switch choice
-        case 'Ice cream'
-            disp([choice ' coming right up.'])
-            dessert = 1;
-        case 'Cake'
-            disp([choice ' coming right up.'])
-            dessert = 2;
-        case 'No thank you'
-            disp('I''ll bring you your check.')
-            dessert = 0;
-    end
+ %% Find files
+ 
+ [s2file,s2offresfile,s3files] = findfiles(source);
+ 
     
-    [filenames,PathName,~] = uigetfile('*.fits','Select the dataset',source,'MultiSelect','on');
+ %% 
+    rf = Snippet_readout
     
+    [data,spec,clocks] = rfspectra(images,rf,varargin)
     
     
     
@@ -52,3 +57,48 @@ function [source,tempfolder,destination] = foldermanagement(raw_data_path,proces
         mkdir(destination);
     end
 end
+
+function [s2file,s2offresfile,s3files] = findfiles(source)
+    %% State 2 resonant imaging
+    finds2img = questdlg('Do you have a state 2 image?', ...
+        'Select state 2 image', ...
+        'Yes','No','No');
+    % Handle response
+    switch finds2img
+        case 'Yes'
+            [s2file,s2path,~] = uigetfile('*.fits','Select the dataset',source,'MultiSelect','off');
+        case 'No'
+            s2file = '';
+            s2path = '';
+    end
+
+    s2file = strcat(s2path,s2file);
+
+    %% State 2 off-resonant image   
+    finds2offresimg = questdlg('Do you have an off-resonant state 2 image?', ...
+        'Select image', ...
+        'Yes','No','No');
+    % Handle response
+    switch finds2offresimg
+        case 'Yes'
+            [s2offresfile,s2offrespath,~] = uigetfile('*.fits','Select the dataset',source,'MultiSelect','off');
+        case 'No'
+            s2offresfile = '';
+            s2offrespath = '';
+    end
+
+    s2offresfile = strcat(s2offrespath,s2offresfile);
+
+    %% State 3 images
+    [s3filenames,s3PathName,~] = uigetfile('*.fits','Select the dataset',source,'MultiSelect','on');
+    s3files = strcat(s3PathName,s3filenames);
+    
+    for i=1:length
+end
+
+
+
+
+
+
+
