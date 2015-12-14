@@ -1,4 +1,4 @@
-function [data,spec,clocks] = rfspectra(images,rf,varargin)
+function [data,spec,clocks] = rfspectra(images,rf,s2img,varargin)
 %% RFSPECTRA takes an image series and plots
 % Usage:  rfspectra(images,rf,crop)
 %         images: a cell array with full paths to images
@@ -16,8 +16,8 @@ switch nargin
         xcrop = 101:383;
         ycrop = 204:389;
     case 2 % default cropping from 2015-11-18
-        xcrop = 50:443;
-        ycrop = 264:289;
+        xcrop = 101:383;
+        ycrop = 204:389;
     case 3 % provide crop coordinates
         crop = varargin{1};
         xcrop = crop(1):crop(2);
@@ -41,7 +41,7 @@ data = rfload(images,rf);
 spec = rfprocess(data,xcrop,ycrop);
 
 %% Bin spectra (optional)
-   spec = rfbin(spec,60);
+ %  spec = rfbin(spec,20);
 
 %% Find the clock shifts
 clocks = clockfind(spec,rf);
@@ -55,8 +55,7 @@ set(ax1,'XTickLabel',num2str(1000*cell2mat(rf(1:2:end)')-81735));
 set(ax1,'FontSize',14);
 xlabel('RF frequency (kHz from 81.735 MHz)');
 ylabel('Axial position');
-colormap jet
-caxis([0 .2])
+caxis([0 .5])
 
 %% Plot the clock shifts (optional)
 figure(2);
@@ -117,13 +116,8 @@ function spec = rfprocess(data,xcrop,ycrop)
     for i=1:length(data)
         image = imrotate(data(i).img,4); % Rotate the image by 4 degrees
         slice = mean(image(xcrop,ycrop),2);
-        spec(:,i) = slice - mean(slice(1:30));
+        spec(:,i) = slice;
     end
-    [~,ix]=max(sum(spec));
-    image = imrotate(data(ix).img,4); % Rotate the image by 4 degrees
-    figure(4);
-    imagesc(image(xcrop,ycrop));
-    axis image
 end
 
 function data = rfload(images,rf)
