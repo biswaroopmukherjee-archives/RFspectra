@@ -1,4 +1,4 @@
-function [data,spec,clocks] = rfspectra(images,rf,varargin)
+function [data,spec,clocks] = rfspectra(images,rf,numslices,varargin)
 %% RFSPECTRA takes an image series and plots
 % Usage:  rfspectra(images,rf,crop)
 %         images: a cell array with full paths to images
@@ -15,10 +15,11 @@ switch nargin
         [images,rf] = samplesload;
         xcrop = 101:383;
         ycrop = 204:389;
-    case 2 % default cropping from 2015-11-18
-        xcrop = 50:443;
+        numslices = 10;
+    case 3 % default cropping from 2015-11-18
+        xcrop = 100:373;
         ycrop = 264:289;
-    case 3 % provide crop coordinates
+    case 4 % provide crop coordinates
         crop = varargin{1};
         xcrop = crop(1):crop(2);
         ycrop = crop(3):crop(4);
@@ -41,35 +42,40 @@ data = rfload(images,rf);
 spec = rfprocess(data,xcrop,ycrop);
 
 %% Bin spectra (optional)
-   spec = rfbin(spec,60);
+   if numslices~=0
+    spec = rfbin(spec,numslices);
+   end
 
 %% Find the clock shifts
 clocks = clockfind(spec,rf);
 
 %% Plot spectra (optional)
 figure(1)
+subplot(2,3,2)
 imagesc(specnorm(spec));
 ax1 = gca;
 set(ax1,'XTick',1:2:length(rf))
 set(ax1,'XTickLabel',num2str(1000*cell2mat(rf(1:2:end)')-81735));
 set(ax1,'FontSize',14);
-xlabel('RF frequency (kHz from 81.735 MHz)');
+xlabel('\Delta - 81735 kHz');
 ylabel('Axial position');
 colormap jet
 caxis([0 .2])
+title('Axial slices')
 
 %% Plot the clock shifts (optional)
-figure(2);
+subplot(2,3,3)
 plot(clocks,'Marker','.','MarkerSize',15,'LineStyle','none')
 ylim([81.735,81.745])
 ax2 = gca;
 set(ax2,'FontSize',14);
 xlabel('Axial position');
 ylabel('Mean RF transition frequency');
+title('Clock shifts in position')
 
 %% Plot the clock shift as a function of "kf" from spectral summing
 specsum = sum(spec,2);
-figure(3);
+subplot(2,3,1)
 plot(specsum, clocks,'Marker','.','MarkerSize',15,'LineStyle','none')
 ylim([81.735,81.745])
 xlim([0,max(specsum)])
@@ -77,7 +83,49 @@ ax3 = gca;
 set(ax3,'FontSize',14);
 xlabel('k_F (a.u.)');
 ylabel('Mean RF transition frequency');
+title('Clock shifts in k_F')
 
+%% Plot the cropped image
+subplot(2,3,4)
+[~,ix]=max(sum(spec));
+image = imrotate(data(ix).img,4); % Rotate the image by 4 degrees
+imagesc(image(xcrop,ycrop));
+axis image
+title('Sample cropped image')
+    
+%% Plot individual spectra
+subplot(2,3,5)
+plot(spec');
+title('Individual spectra')
+ax4 = gca;
+xlim([1 size(spec,2)])
+set(ax4,'XTick',1:2:length(rf))
+set(ax4,'XTickLabel',num2str(1000*cell2mat(rf(1:2:end)')-81735));
+set(ax4,'FontSize',14);
+xlabel('\Delta - 81735 kHz');
+
+%% Plot tails
+subplot(2,3,6)
+tails = spec(:,end-11:end)';
+tailrf = 1000* cell2mat(rf(end-11:end))' - 81735;
+plot(tails,'.');
+title('tails')
+ax4 = gca;
+set(ax4,'XTick',1:length(tailrf))
+set(ax4,'XTickLabel',num2str(tailrf));
+set(ax4,'FontSize',14);
+xlabel('\Delta - 81735 kHz');
+hold all
+
+for i=1:size(tails,1)
+    [xData, yData] = prepareCurveData( tailrf, log(tails(:,i)) );
+    ft = fittype( 'poly1' );
+    [fitresult, gof] = fit( xData, yData, ft );
+    if gof.rsquare>0.5
+        plot(exp(fitresult(tailrf)))
+    end
+end
+hold off
 end
 
 function clocks = clockfind(spec,rf)
@@ -119,11 +167,6 @@ function spec = rfprocess(data,xcrop,ycrop)
         slice = mean(image(xcrop,ycrop),2);
         spec(:,i) = slice - mean(slice(1:30));
     end
-    [~,ix]=max(sum(spec));
-    image = imrotate(data(ix).img,4); % Rotate the image by 4 degrees
-    figure(4);
-    imagesc(image(xcrop,ycrop));
-    axis image
 end
 
 function data = rfload(images,rf)
@@ -132,13 +175,13 @@ function data = rfload(images,rf)
     data(1:length(images)) = struct('name','','img',[],'rf',0);
     % Load the images from the filenames
     fprintf('\n');
-%     s2img = loadfitsimage('/Users/biswaroopmukherjee/Documents/Physics/Research/Zwierlein/box data/11-25-2015_19_52_49_top.fits');
+%     s2img = loadfitsimage('C:\2015-12\2015-12-07\hybrid spectrum _1\offres state 2\12-07-2015_20_53_53_top.fits');
     for i =1:length(images)
         fprintf('.');
         data(i).name = images{i};
 %         disp(images{i});
 %         disp(rf{i});
-        data(i).img=loadfitsimage(data(i).name);
+        data(i).img=loadfitsimage(data(i).name);%-s2img;
         data(i).rf = rf{i};
     end
     fprintf('\n');
