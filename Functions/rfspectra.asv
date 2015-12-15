@@ -107,8 +107,9 @@ xlabel('\Delta - 81735 kHz');
 %% Plot tails
 subplot(2,3,6)
 tails = spec(:,end-11:end)';
-tailrf = 1000* cell2mat(rf(end-11:end))' - 81735;
-plot(tails,'.');
+
+tailrf = 1000* cell2mat(rf(end-11:end))' - 81735.5
+plot(tails);
 title('tails')
 ax4 = gca;
 set(ax4,'XTick',1:length(tailrf))
@@ -118,14 +119,12 @@ xlabel('\Delta - 81735 kHz');
 hold all
 
 for i=1:size(tails,1)
-    [xData, yData] = prepareCurveData( tailrf, log(tails(:,i)) );
+    [xData, yData] = prepareCurveData( tailrf, log(tails(i,:)) );
     ft = fittype( 'poly1' );
     [fitresult, gof] = fit( xData, yData, ft );
-    if gof.rsquare>0.5
-        plot(exp(fitresult(tailrf)))
-    end
+    plot(7:30,exp(fitresult(7:30)))
 end
-hold off
+
 end
 
 function clocks = clockfind(spec,rf)
