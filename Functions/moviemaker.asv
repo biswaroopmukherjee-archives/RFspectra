@@ -1,0 +1,22 @@
+v = VideoWriter('C:\Users\Elder\Dropbox (MIT)\BEC1\Processed Data\2016\2016-01\2016-01-04\RF 1V\rf.avi');
+v.FrameRate = 10;
+open(v);
+image = imrotate(data(1).img,4);
+   imagesc(image(100:360,150:370));
+   axis image;
+   colormap parula;
+   caxis([-.1 1.5]);
+set(gca,'nextplot','replacechildren'); 
+for k = 1:length(data) 
+   image = imrotate(data(k).img,4);
+   imagesc(image(100:360,150:370));
+   axis image;
+   colormap parula;
+   titlestring = strcat('\nu_{RF} = ', rf{k
+   title('f')
+   caxis([-.1 1.1]);
+   frame = getframe(gcf);
+   writeVideo(v,frame);
+end
+
+close(v);
