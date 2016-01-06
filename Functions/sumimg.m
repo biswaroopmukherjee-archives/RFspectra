@@ -14,7 +14,7 @@ switch nargin
     case 1 % load samples
         xcrop = 1:512;
         ycrop = 1:512;
-    case 3 % provide crop coordinates
+    case 2 % provide crop coordinates
         crop = varargin{1};
         xcrop = crop(1):crop(2);
         ycrop = crop(3):crop(4);

@@ -54,8 +54,8 @@ figure(1)
 subplot(2,3,2)
 imagesc(specnorm(spec));
 ax1 = gca;
-set(ax1,'XTick',1:2:length(rf))
-set(ax1,'XTickLabel',num2str(1000*cell2mat(rf(1:2:end)')-81735));
+set(ax1,'XTick',1:4:length(rf))
+set(ax1,'XTickLabel',num2str(1000*cell2mat(rf(1:4:end)')-81735));
 set(ax1,'FontSize',14);
 xlabel('\Delta - 81735 kHz');
 ylabel('Axial position');
@@ -106,26 +106,13 @@ xlabel('\Delta - 81735 kHz');
 
 %% Plot tails
 subplot(2,3,6)
-tails = spec(:,end-11:end)';
-tailrf = 1000* cell2mat(rf(end-11:end))' - 81735;
-plot(tails,'.');
-title('tails')
+tails = spec';
+omega = 1000* cell2mat(rf)' - 81735;
+plot(omega,tails(:,end/2).*(omega.^(3/2)));
+title('I(\omega)*\omega^{3/2}')
 ax4 = gca;
-set(ax4,'XTick',1:length(tailrf))
-set(ax4,'XTickLabel',num2str(tailrf));
 set(ax4,'FontSize',14);
 xlabel('\Delta - 81735 kHz');
-hold all
-
-for i=1:size(tails,1)
-    [xData, yData] = prepareCurveData( tailrf, log(tails(:,i)) );
-    ft = fittype( 'poly1' );
-    [fitresult, gof] = fit( xData, yData, ft );
-    if gof.rsquare>0.5
-        plot(exp(fitresult(tailrf)))
-    end
-end
-hold off
 end
 
 function clocks = clockfind(spec,rf)
@@ -164,6 +151,7 @@ function spec = rfprocess(data,xcrop,ycrop)
     % Populate spectra
     for i=1:length(data)
         image = imrotate(data(i).img,4); % Rotate the image by 4 degrees
+        data(i).subimg = image(xcrop,ycrop);
         slice = mean(image(xcrop,ycrop),2);
         spec(:,i) = slice - mean(slice(1:30));
     end
